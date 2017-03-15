@@ -53,6 +53,7 @@ greatly appreciated!
 module System.CPU (
     CPU(..)
     -- * Retrieving CPU Information
+  , parseCPUs
   , getCPUs
   , tryGetCPUs
     -- * Physical Features
@@ -271,11 +272,15 @@ tryCPU bs = do
                pa
                va
 
+-- | Try to parse a ByteString in the format of @\/proc\/cpuinfo@.
+parseCPUs :: B.ByteString -> Maybe [CPU]
+parseCPUs = mapM tryCPU . splitCPULines
+
 -- | Read @\/proc\/cpuinfo@ and try to parse the output. If this function
 --   returns 'Nothing' on your system, please file a bug report with your
 --   @\/proc\/cpuinfo@ contents and CPU specifications.
 tryGetCPUs :: IO (Maybe [CPU])
-tryGetCPUs = (mapM tryCPU . splitCPULines)
+tryGetCPUs = parseCPUs
           <$> B.readFile "/proc/cpuinfo"
 
 -- | Read @\/proc\/cpuinfo@ and try to parse the output. If this function throws
